@@ -35,9 +35,24 @@ def gradcheck_naive(f, x, gradient_text=""):
         # before calling f(x) each time. This will make it possible
         # to test cost functions with built in randomness later.
 
-        ### YOUR CODE HERE:
-        raise NotImplementedError
-        ### END YOUR CODE
+        # Save the old value
+        old_val = x[ix]
+
+        # Compute f(x + h)
+        x[ix] = old_val + h
+        random.setstate(rndstate)
+        fxh_plus, _ = f(x)
+
+        # Compute f(x - h)
+        x[ix] = old_val - h
+        random.setstate(rndstate)
+        fxh_minus, _ = f(x)
+
+        # Restore the value
+        x[ix] = old_val
+
+        # Centered difference
+        numgrad = (fxh_plus - fxh_minus) / (2 * h)
 
         # Compare gradients
         assert_allclose(numgrad, grad[ix], rtol=1e-5,
@@ -65,15 +80,42 @@ def test_gradcheck_basic():
 
 def your_gradcheck_test():
     """
-    Use this space add any additional sanity checks by running:
-        python q2_gradcheck.py
-    This function will not be called by the autograder, nor will
-    your additional tests be graded.
+    Additional sanity checks for gradient checking.
     """
     print("Running your sanity checks...")
-    ### YOUR OPTIONAL CODE HERE
-    pass
-    ### END YOUR CODE
+
+    # 1. Cubic function
+    cubic = lambda x: (np.sum(x ** 3), 3 * x ** 2)
+    gradcheck_naive(cubic, np.array(2.0))
+    gradcheck_naive(cubic, np.random.randn(5,))
+    gradcheck_naive(cubic, np.random.randn(3, 2))
+
+    # 2. Sine function
+    sine_func = lambda x: (np.sum(np.sin(x)), np.cos(x))
+    gradcheck_naive(sine_func, np.array(0.5))
+    gradcheck_naive(sine_func, np.random.randn(4,))
+    gradcheck_naive(sine_func, np.random.randn(2, 3))
+
+    # 3. Exponential function
+    exp_func = lambda x: (np.sum(np.exp(x)), np.exp(x))
+    gradcheck_naive(exp_func, np.array(0.0))
+    gradcheck_naive(exp_func, np.random.randn(6,))
+
+    # 4. Logarithm (avoid zero or negative)
+    log_func = lambda x: (np.sum(np.log(x)), 1.0 / x)
+    gradcheck_naive(log_func, np.array([0.1, 1.0, 2.0]))
+    gradcheck_naive(log_func, np.random.rand(3, 3) + 0.1)  # add 0.1 to avoid log(0)
+
+    # 5. Function with randomness (gradient should not depend on random part)
+    def random_func(x):
+        val = np.sum(x**2) + random.random() * 0.0  # randomness has zero effect
+        grad = 2 * x
+        return val, grad
+
+    gradcheck_naive(random_func, np.random.randn(4,))
+    gradcheck_naive(random_func, np.random.randn(2, 2))
+
+    print("All additional sanity checks passed!\n")
 
 
 if __name__ == "__main__":
