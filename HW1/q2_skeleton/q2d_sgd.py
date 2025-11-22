@@ -83,12 +83,10 @@ def sgd(f, x0, step, iterations, postprocessing=None, use_saved=False,
     exploss = None
 
     for iter_ in range(start_iter + 1, iterations + 1):
-        # You might want to print the progress every few iterations.
-
-        loss = None
-        ### YOUR CODE HERE
-        raise NotImplementedError
-        ### END YOUR CODE
+        if iter_ % 5000 == 0:
+            print("SGD Iteration %d" % iter_)
+        loss, grad = f(x)
+        x -= step * grad
 
         x = postprocessing(x)
         if iter_ % print_every == 0:
