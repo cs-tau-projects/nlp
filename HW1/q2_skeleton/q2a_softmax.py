@@ -12,17 +12,17 @@ def softmax(x):
     x -- You are allowed to modify x in-place
     """
     orig_shape = x.shape
+    x = x.astype(float)
 
     if len(x.shape) > 1:
         # Matrix
-        ### YOUR CODE HERE
-        raise NotImplementedError
-        ### END YOUR CODE
+        x -= x.max(axis=1, keepdims=True)
+        np.exp(x, out=x)  # Exp in-place
+        x /= x.sum(axis=1, keepdims=True)  # Divide by sum
     else:
         # Vector
-        ### YOUR CODE HERE
-        raise NotImplementedError
-        ### END YOUR CODE
+        np.exp(x, out=x) # Exp in-place
+        x /= np.sum(x)   # Divide by sum
 
     assert x.shape == orig_shape
     return x
@@ -62,9 +62,70 @@ def your_softmax_test():
     your tests be graded.
     """
     print("Running your tests...")
-    ### YOUR OPTIONAL CODE HERE
-    pass
-    ### END YOUR CODE
+
+    # ---------------- Test 1: simple vector ----------------
+    x = np.array([1.0, 2.0, 3.0])
+    y = x.copy()
+    assert np.allclose(softmax(y), [0.09003057, 0.24472847, 0.66524096])
+
+
+    # ---------------- Test 2: simple matrix (row-wise) ----------------
+    x = np.array([[1.0, 2.0, 3.0],
+                [4.0, 5.0, 6.0]])
+    y = x.copy()
+    softmax(y)
+    assert np.allclose(softmax(y), [
+        [0.09003057, 0.24472847, 0.66524096],
+        [0.09003057, 0.24472847, 0.66524096]
+    ])
+
+
+    # ---------------- Test 3: uniform vector ----------------
+    x = np.array([5.0, 5.0, 5.0])
+    y = x.copy()
+    assert np.allclose(softmax(y), [1/3, 1/3, 1/3])
+
+
+    # ---------------- Test 4: negative vector ----------------
+    x = np.array([-1.0, -2.0, -3.0])
+    y = x.copy()
+    assert np.allclose(softmax(y), [0.66524096, 0.24472847, 0.09003057])
+
+
+    # ---------------- Test 5: uniform rows ----------------
+    x = np.array([[2.0, 2.0, 2.0],
+                [9.0, 9.0, 9.0]])
+    y = x.copy()
+    assert np.allclose(softmax(y), [
+        [1/3, 1/3, 1/3],
+        [1/3, 1/3, 1/3]
+    ])
+
+    # ---------------- Test 6: random row ----------------
+    x = np.array([0.0, 1.0, -1.0])
+    y = x.copy()
+    assert np.allclose(softmax(y), [0.24472847, 0.66524096, 0.09003057])
+
+    # ---------------- Test 7: 1×N treated as row ----------------
+    x = np.array([[0.0, 1.0, 2.0]])
+    y = x.copy()
+    assert np.allclose(softmax(y), [[0.09003057, 0.24472847, 0.66524096]])
+
+    # ---------------- Test 8: N×1 treated as column-vector rows ----------------
+    x = np.array([[1.0],
+                [2.0],
+                [3.0]])
+    y = x.copy()
+    assert np.allclose(softmax(y), [[1.0], [1.0], [1.0]])
+
+    # ---------------- Test 9: mixed ints + floats ----------------
+    x = np.array([[1, 2.0, 3],
+                [0, -1.0, -2]])
+    y = x.copy()
+    assert np.allclose(softmax(y), [
+        [0.09003057, 0.24472847, 0.66524096],
+        [0.66524096, 0.24472847, 0.09003057]
+    ])
 
 
 if __name__ == "__main__":
