@@ -169,3 +169,15 @@ if __name__ == "__main__":
         print(f"test perplexity : {perplexity}")
     else:
         print("test perplexity will be evaluated only at test time!")
+
+    
+    ### Q3(b): Perplexity on Shakespeare & Wikipedia texts ###
+
+    shakespeare_path = 'shakespare_pos_fromat.txt'
+    wikipedia_path = 'wikipedia_pos_fromat.txt'
+
+    ppl_shakespeare = eval_neural_lm(shakespeare_path)
+    print(f"Shakespeare perplexity : {ppl_shakespeare}")
+
+    ppl_wikipedia = eval_neural_lm(wikipedia_path)
+    print(f"Wikipedia perplexity : {ppl_wikipedia}")
